@@ -2,17 +2,35 @@ import React, { useState, useEffect } from "react";
 import { AiOutlineThunderbolt } from "react-icons/ai";
 
 const Dashboard = () => {
-  // Initialize state with the value from localStorage or default to 0
   const [count, setCount] = useState(() => {
     const savedCount = localStorage.getItem("hamsterCount");
-    return savedCount ? Number(savedCount) : 0; // Parse the value or default to 0
+    return savedCount ? Number(savedCount) : 0;
   });
-
   const [progress, setProgress] = useState(8);
+  const [name, setName] = useState(""); // State to store the fetched name
 
-  // Save the count to localStorage whenever it changes
+  // Fetch name from the provided fetch API
+  useEffect(() => {
+    fetch("https://phpback-15.onrender.com/fetch.php")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.name) {
+          setName(data.name); // Assuming the response has a 'name' field
+        }
+      })
+      .catch((error) => console.error("Error fetching name:", error));
+  }, []);
+
+  // Save count to localStorage and send it to the update API
   useEffect(() => {
     localStorage.setItem("hamsterCount", count);
+    fetch("https://phpback-15.onrender.com/update.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ count }),
+    }).catch((error) => console.error("Error sending count:", error));
   }, [count]);
 
   const handleImageClick = () => {
@@ -27,6 +45,9 @@ const Dashboard = () => {
     <div className="text-center">
       {/* Title */}
       <h1 className="text-3xl font-bold mt-8 pb-2 mb-4">Hamster Kombat (CEO)</h1>
+
+      {/* Display Name */}
+      <h2 className="text-2xl mb-4">Welcome, {name || "Player"}</h2>
 
       {/* Progress Bar */}
       <div className="flex justify-between items-center mb-4 px-6">
